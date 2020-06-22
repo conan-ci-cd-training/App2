@@ -56,7 +56,12 @@ def get_stages(profile, docker_image, lockfile_contents) {
 
                             if (env.BRANCH_NAME == "develop") {                     
                                 stage("Upload package") {
-                                    sh "conan upload '*' --all -r ${conan_develop_repo} --confirm"
+                                    if (lockfile_contents==null) {                                    
+                                        sh "conan upload '${name}/${version}' --all -r ${conan_develop_repo} --confirm"
+                                    }
+                                    else { // in this case the products pipeline will promote the artifacts
+                                        sh "conan upload '${name}/${version}' --all -r ${conan_tmp_repo} --confirm"
+                                    }
                                 }
                                 stage("Upload lockfile") {
                                     def lockfile_path = "/${artifactory_metadata_repo}/${env.JOB_NAME}/${env.BUILD_NUMBER}/${name}/${version}@${user_channel}/${profile}/${lockfile}"
